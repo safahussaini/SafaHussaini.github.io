@@ -1,19 +1,19 @@
-// 🔘 Toggle scenes with buttons
-window.showScene = function(sceneId) {
+// 🎯 Toggle scenes via buttons
+window.showScene = function (sceneId) {
   document.getElementById("scene1").style.display = sceneId === "scene1" ? "block" : "none";
   document.getElementById("scene2").style.display = sceneId === "scene2" ? "block" : "none";
   document.getElementById("scene3").style.display = sceneId === "scene3" ? "block" : "none";
 };
 
-// 📏 Chart dimensions
+// 📐 Chart layout
 const margin = { top: 50, right: 30, bottom: 60, left: 60 },
-      width = 800 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
+  width = 800 - margin.left - margin.right,
+  height = 500 - margin.top - margin.bottom;
 
-// 📊 Load CSV once
+// 📊 Load CSV
 d3.csv("data/Career_Stats_Passing.csv").then(data => {
   data.forEach(d => {
-    // 🔧 Clean column names with trim()
+    // Clean column names
     for (let key in d) {
       const cleanKey = key.trim();
       if (cleanKey !== key) {
@@ -22,19 +22,18 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       }
     }
 
-    // 🔢 Convert to numbers
     d.Year = +d.Year;
     d["Passing Yards Per Game"] = +d["Passing Yards Per Game"] || 0;
     d["Completion Percentage"] = +d["Completion Percentage"] || 0;
+    d["TD Passes"] = +d["TD Passes"] || 0;
+    d.Ints = +d.Ints || 0;
   });
 
-  // ====================
-  // 📈 Scene 1: Yards
-  // ====================
+  // =============== Scene 1: Yards Over Time ===============
   const svg1 = d3.select("#scene1").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgYardsByYear = Array.from(
@@ -61,13 +60,11 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgYardsByYear.at(-1).year}, ${avgYardsByYear.at(-1).avgYards.toFixed(1)} yds/game`);
 
-  // ====================
-  // 🎯 Scene 2: Completion %
-  // ====================
+  // =============== Scene 2: Completion % Over Time ===============
   const svg2 = d3.select("#scene2").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgCompByYear = Array.from(
@@ -94,18 +91,16 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgCompByYear.at(-1).year}, ${avgCompByYear.at(-1).avgComp.toFixed(1)}% comp`);
 
-  // ====================
-  // 🎛️ Scene 3: Explore
-  // ====================
+  // =============== Scene 3: Explore by Year ===============
   const container3 = d3.select("#scene3");
-  container3.append("h2").text("Explore Passing Yards Per Game by Season");
+  container3.append("h2").text("Explore Top QBs by Yards/Game");
 
   const yearSelect = container3.append("select").attr("id", "yearDropdown");
 
   const svg3 = container3.append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const years = Array.from(new Set(data.map(d => d.Year))).sort((a, b) => a - b);
@@ -123,9 +118,17 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     const topPlayers = filtered.sort((a, b) =>
       b["Passing Yards Per Game"] - a["Passing Yards Per Game"]
-    ).slice(0, 20);
+    ).slice(0, 15);
 
     svg3.selectAll("*").remove();
+
+    svg3.append("text")
+      .attr("x", width / 2)
+      .attr("y", -20)
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .style("font-weight", "bold")
+      .text(`Top Quarterbacks by Passing Yards/Game – ${selectedYear}`);
 
     const x = d3.scaleBand()
       .domain(topPlayers.map(d => d.Name))
@@ -138,39 +141,65 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickFormat(name => name.split(" ")[1] || name))
+      .call(d3.axisBottom(x).tickFormat(name => name).tickSizeOuter(0))
       .selectAll("text")
-      .attr("transform", "rotate(-45)")
-      .style("text-anchor", "end");
+      .attr("transform", "rotate(-35)")
+      .style("text-anchor", "end")
+      .style("font-size", "10px");
 
     svg3.append("g").call(d3.axisLeft(y));
 
+    // Tooltip
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("background", "#fff")
+      .style("border", "1px solid #ccc")
+      .style("padding", "8px")
+      .style("border-radius", "5px")
+      .style("pointer-events", "none")
+      .style("font-size", "12px");
+
+    // Bars
     svg3.selectAll("rect")
       .data(topPlayers)
       .enter()
       .append("rect")
       .attr("x", d => x(d.Name))
-      .attr("y", d => y(d["Passing Yards Per Game"]))
+      .attr("y", height)
       .attr("width", x.bandwidth())
-      .attr("height", d => height - y(d["Passing Yards Per Game"]))
-      .attr("fill", "orange");
+      .attr("height", 0)
+      .attr("fill", "orange")
+      .on("mouseover", function (event, d) {
+        tooltip.style("opacity", 1)
+          .html(`<strong>${d.Name}</strong><br>
+                Team: ${d.Team}<br>
+                Yards/Game: ${d["Passing Yards Per Game"].toFixed(1)}<br>
+                Comp%: ${d["Completion Percentage"]}%<br>
+                TDs: ${d["TD Passes"]}<br>
+                INTs: ${d.Ints}`)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 40) + "px");
+      })
+      .on("mouseout", () => tooltip.style("opacity", 0))
+      .transition()
+      .duration(800)
+      .attr("y", d => y(d["Passing Yards Per Game"]))
+      .attr("height", d => height - y(d["Passing Yards Per Game"]));
 
-    svg3.selectAll("text.bar-label")
-      .data(topPlayers)
-      .enter()
-      .append("text")
-      .attr("class", "bar-label")
-      .attr("x", d => x(d.Name) + x.bandwidth() / 2)
-      .attr("y", d => y(d["Passing Yards Per Game"]) - 5)
+    // Annotate top player
+    const top = topPlayers[0];
+    svg3.append("text")
+      .attr("x", x(top.Name) + x.bandwidth() / 2)
+      .attr("y", y(top["Passing Yards Per Game"]) - 20)
       .attr("text-anchor", "middle")
-      .style("font-size", "10px")
-      .text(d => d["Passing Yards Per Game"].toFixed(1));
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text(`Top QB: ${top.Name}`);
   }
 
-  // 🔃 Initial draw
   updateScene3(years.at(-1));
-
-  // 🔄 Dropdown listener
   yearSelect.on("change", function () {
     updateScene3(this.value);
   });
