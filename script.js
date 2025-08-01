@@ -7,9 +7,10 @@ window.showScene = function (sceneId) {
 
 // 📐 Chart layout
 const margin = { top: 50, right: 30, bottom: 100, left: 60 },
-  width = 800 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+      width = 800 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
 
+// 📊 Load CSV
 d3.csv("data/Career_Stats_Passing.csv").then(data => {
   data.forEach(d => {
     // Clean up trailing spaces in column names
@@ -28,7 +29,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     d.Ints = +d.Ints || 0;
   });
 
-  // =============== Scene 1 ===============
+  // =============== Scene 1: Yards Over Time ===============
   const svg1 = d3.select("#scene1").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -59,7 +60,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgYardsByYear.at(-1).year}, ${avgYardsByYear.at(-1).avgYards.toFixed(1)} yds/game`);
 
-  // =============== Scene 2 ===============
+  // =============== Scene 2: Completion % Over Time ===============
   const svg2 = d3.select("#scene2").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -90,7 +91,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgCompByYear.at(-1).year}, ${avgCompByYear.at(-1).avgComp.toFixed(1)}% comp`);
 
-  // =============== Scene 3 ===============
+  // =============== Scene 3: Explore by Year ===============
   const container3 = d3.select("#scene3");
   container3.append("h2").text("Explore Top QBs by Yards/Game");
 
@@ -119,7 +120,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       b["Passing Yards Per Game"] - a["Passing Yards Per Game"]
     ).slice(0, 15);
 
-    // 🔄 Format full name: First Last
+    // Format full name
     topPlayers.forEach(d => {
       const [last, first] = d.Name.split(", ");
       d.FullName = `${first} ${last}`;
@@ -148,9 +149,9 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x).tickSizeOuter(0))
       .selectAll("text")
+      .attr("transform", "rotate(-35)")
       .style("text-anchor", "end")
-      .style("font-size", "10px")
-      .attr("transform", "rotate(-35)");
+      .style("font-size", "10px");
 
     svg3.append("g").call(d3.axisLeft(y));
 
