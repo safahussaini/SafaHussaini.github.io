@@ -1,26 +1,36 @@
-// 🔘 Show/hide scenes
+// 🔘 Toggle scenes with buttons
 window.showScene = function(sceneId) {
   document.getElementById("scene1").style.display = sceneId === "scene1" ? "block" : "none";
   document.getElementById("scene2").style.display = sceneId === "scene2" ? "block" : "none";
   document.getElementById("scene3").style.display = sceneId === "scene3" ? "block" : "none";
 };
 
-// 🎯 Common setup
+// 📏 Chart dimensions
 const margin = { top: 50, right: 30, bottom: 60, left: 60 },
       width = 800 - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
 
-// 🎯 Load data once and draw all scenes
+// 📊 Load CSV once
 d3.csv("data/Career_Stats_Passing.csv").then(data => {
   data.forEach(d => {
+    // 🔧 Clean column names with trim()
+    for (let key in d) {
+      const cleanKey = key.trim();
+      if (cleanKey !== key) {
+        d[cleanKey] = d[key];
+        delete d[key];
+      }
+    }
+
+    // 🔢 Convert to numbers
     d.Year = +d.Year;
-    d["Passing Yards Per Game"] = +d["Passing Yards Per Game"];
-    d["Completion Percentage"] = +d["Completion Percentage"];
+    d["Passing Yards Per Game"] = +d["Passing Yards Per Game"] || 0;
+    d["Completion Percentage"] = +d["Completion Percentage"] || 0;
   });
 
-  // =========================
-  // 🎬 Scene 1: Passing Yards
-  // =========================
+  // ====================
+  // 📈 Scene 1: Yards
+  // ====================
   const svg1 = d3.select("#scene1").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -28,7 +38,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgYardsByYear = Array.from(
-    d3.group(data.filter(d => !isNaN(d["Passing Yards Per Game"])), d => d.Year),
+    d3.group(data.filter(d => d["Passing Yards Per Game"] > 0), d => d.Year),
     ([year, records]) => ({
       year: +year,
       avgYards: d3.mean(records, r => r["Passing Yards Per Game"])
@@ -51,9 +61,9 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgYardsByYear.at(-1).year}, ${avgYardsByYear.at(-1).avgYards.toFixed(1)} yds/game`);
 
-  // ===============================
-  // 🎬 Scene 2: Completion %
-  // ===============================
+  // ====================
+  // 🎯 Scene 2: Completion %
+  // ====================
   const svg2 = d3.select("#scene2").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -61,7 +71,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgCompByYear = Array.from(
-    d3.group(data.filter(d => !isNaN(d["Completion Percentage"])), d => d.Year),
+    d3.group(data.filter(d => d["Completion Percentage"] > 0), d => d.Year),
     ([year, records]) => ({
       year: +year,
       avgComp: d3.mean(records, r => r["Completion Percentage"])
@@ -84,9 +94,9 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgCompByYear.at(-1).year}, ${avgCompByYear.at(-1).avgComp.toFixed(1)}% comp`);
 
-  // ===============================
-  // 🎬 Scene 3: Explore by Year
-  // ===============================
+  // ====================
+  // 🎛️ Scene 3: Explore
+  // ====================
   const container3 = d3.select("#scene3");
   container3.append("h2").text("Explore Passing Yards Per Game by Season");
 
@@ -108,7 +118,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
   function updateScene3(selectedYear) {
     const filtered = data.filter(d =>
-      d.Year === +selectedYear && !isNaN(d["Passing Yards Per Game"])
+      d.Year === +selectedYear && d["Passing Yards Per Game"] > 0
     );
 
     const topPlayers = filtered.sort((a, b) =>
@@ -157,8 +167,10 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .text(d => d["Passing Yards Per Game"].toFixed(1));
   }
 
-  updateScene3(years.at(-1)); // default latest year
+  // 🔃 Initial draw
+  updateScene3(years.at(-1));
 
+  // 🔄 Dropdown listener
   yearSelect.on("change", function () {
     updateScene3(this.value);
   });
