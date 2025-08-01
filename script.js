@@ -9,7 +9,7 @@ const svg = d3.select("#chart")
   .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-d3.csv("football data/Career_Stats_Passing.csv").then(data => {
+d3.csv("data/Career_Stats_Passing.csv").then(data => {
   data.forEach(d => {
     d.Year = +d.Year;
     d["Passing Yards Per Game"] = +d["Passing Yards Per Game"];
