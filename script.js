@@ -6,14 +6,13 @@ window.showScene = function (sceneId) {
 };
 
 // 📐 Chart layout
-const margin = { top: 50, right: 30, bottom: 60, left: 60 },
+const margin = { top: 50, right: 30, bottom: 100, left: 60 },
   width = 800 - margin.left - margin.right,
   height = 500 - margin.top - margin.bottom;
 
-// 📊 Load CSV
 d3.csv("data/Career_Stats_Passing.csv").then(data => {
   data.forEach(d => {
-    // Clean column names
+    // Clean up trailing spaces in column names
     for (let key in d) {
       const cleanKey = key.trim();
       if (cleanKey !== key) {
@@ -29,7 +28,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     d.Ints = +d.Ints || 0;
   });
 
-  // =============== Scene 1: Yards Over Time ===============
+  // =============== Scene 1 ===============
   const svg1 = d3.select("#scene1").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -60,7 +59,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgYardsByYear.at(-1).year}, ${avgYardsByYear.at(-1).avgYards.toFixed(1)} yds/game`);
 
-  // =============== Scene 2: Completion % Over Time ===============
+  // =============== Scene 2 ===============
   const svg2 = d3.select("#scene2").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -91,7 +90,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .style("font-size", "12px")
     .text(`Latest: ${avgCompByYear.at(-1).year}, ${avgCompByYear.at(-1).avgComp.toFixed(1)}% comp`);
 
-  // =============== Scene 3: Explore by Year ===============
+  // =============== Scene 3 ===============
   const container3 = d3.select("#scene3");
   container3.append("h2").text("Explore Top QBs by Yards/Game");
 
@@ -120,6 +119,12 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       b["Passing Yards Per Game"] - a["Passing Yards Per Game"]
     ).slice(0, 15);
 
+    // 🔄 Format full name: First Last
+    topPlayers.forEach(d => {
+      const [last, first] = d.Name.split(", ");
+      d.FullName = `${first} ${last}`;
+    });
+
     svg3.selectAll("*").remove();
 
     svg3.append("text")
@@ -131,7 +136,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .text(`Top Quarterbacks by Passing Yards/Game – ${selectedYear}`);
 
     const x = d3.scaleBand()
-      .domain(topPlayers.map(d => d.Name))
+      .domain(topPlayers.map(d => d.FullName))
       .range([0, width])
       .padding(0.2);
 
@@ -141,15 +146,14 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickFormat(name => name).tickSizeOuter(0))
+      .call(d3.axisBottom(x).tickSizeOuter(0))
       .selectAll("text")
-      .attr("transform", "rotate(-35)")
       .style("text-anchor", "end")
-      .style("font-size", "10px");
+      .style("font-size", "10px")
+      .attr("transform", "rotate(-35)");
 
     svg3.append("g").call(d3.axisLeft(y));
 
-    // Tooltip
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0)
@@ -161,19 +165,18 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .style("pointer-events", "none")
       .style("font-size", "12px");
 
-    // Bars
     svg3.selectAll("rect")
       .data(topPlayers)
       .enter()
       .append("rect")
-      .attr("x", d => x(d.Name))
+      .attr("x", d => x(d.FullName))
       .attr("y", height)
       .attr("width", x.bandwidth())
       .attr("height", 0)
       .attr("fill", "orange")
       .on("mouseover", function (event, d) {
         tooltip.style("opacity", 1)
-          .html(`<strong>${d.Name}</strong><br>
+          .html(`<strong>${d.FullName}</strong><br>
                 Team: ${d.Team}<br>
                 Yards/Game: ${d["Passing Yards Per Game"].toFixed(1)}<br>
                 Comp%: ${d["Completion Percentage"]}%<br>
@@ -188,15 +191,14 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("y", d => y(d["Passing Yards Per Game"]))
       .attr("height", d => height - y(d["Passing Yards Per Game"]));
 
-    // Annotate top player
     const top = topPlayers[0];
     svg3.append("text")
-      .attr("x", x(top.Name) + x.bandwidth() / 2)
+      .attr("x", x(top.FullName) + x.bandwidth() / 2)
       .attr("y", y(top["Passing Yards Per Game"]) - 20)
       .attr("text-anchor", "middle")
       .style("font-size", "12px")
       .style("font-weight", "bold")
-      .text(`Top QB: ${top.Name}`);
+      .text(`Top QB: ${top.FullName}`);
   }
 
   updateScene3(years.at(-1));
