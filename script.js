@@ -1,8 +1,8 @@
 // 🔘 Button Trigger Logic
-function showScene(sceneId) {
+window.showScene = function(sceneId) {
   document.getElementById("scene1").style.display = sceneId === "scene1" ? "block" : "none";
   document.getElementById("scene2").style.display = sceneId === "scene2" ? "block" : "none";
-}
+};
 
 // 🧱 Chart dimensions
 const margin = { top: 50, right: 30, bottom: 50, left: 60 },
