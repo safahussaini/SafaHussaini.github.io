@@ -2,12 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>QB Passing Yards Per Game</title>
+  <title>QB Evolution Visualization</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-  <h1>Scene 1: Average QB Passing Yards Per Game (Regular Season)</h1>
-  <div id="chart"></div>
+  <h1>Quarterback Evolution Over Time</h1>
+
+  <!-- Navigation Buttons -->
+  <button onclick="showScene('scene1')">Scene 1: Passing Yards</button>
+  <button onclick="showScene('scene2')">Scene 2: Completion %</button>
+
+  <!-- Scene Containers -->
+  <div id="scene1" style="display: block;"></div>
+  <div id="scene2" style="display: none;"></div>
+
   <script src="script.js"></script>
 </body>
 </html>
