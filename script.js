@@ -203,7 +203,8 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .text(`Top QB: ${top.Name}`);
   }
 
-  updateScene3(years.at(-1));
+  updateScene3(1932);
+document.getElementById("yearDropdown").value = 1932;
   yearSelect.on("change", function () {
     updateScene3(this.value);
   });
