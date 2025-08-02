@@ -6,7 +6,7 @@ window.showScene = function (sceneId) {
 };
 
 // 📐 Chart layout
-const margin = { top: 50, right: 30, bottom: 100, left: 60 },
+const margin = { top: 50, right: 30, bottom: 60, left: 60 },
   width = 800 - margin.left - margin.right,
   height = 500 - margin.top - margin.bottom;
 
@@ -46,35 +46,31 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   const x1 = d3.scaleLinear().domain(d3.extent(avgYardsByYear, d => d.year)).range([0, width]);
   const y1 = d3.scaleLinear().domain([0, d3.max(avgYardsByYear, d => d.avgYards)]).nice().range([height, 0]);
 
-  svg1.append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x1).tickFormat(d3.format("d")));
+  svg1.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x1).tickFormat(d3.format("d")));
   svg1.append("g").call(d3.axisLeft(y1));
 
   svg1.append("text")
     .attr("x", width / 2)
     .attr("y", height + 40)
-    .attr("text-anchor", "middle")
+    .style("text-anchor", "middle")
     .text("Year");
 
   svg1.append("text")
     .attr("transform", "rotate(-90)")
     .attr("x", -height / 2)
-    .attr("y", -45)
-    .attr("text-anchor", "middle")
-    .text("Avg Passing Yards/Game");
+    .attr("y", -40)
+    .style("text-anchor", "middle")
+    .text("Avg Passing Yards per Game");
 
   const line1 = d3.line().x(d => x1(d.year)).y(d => y1(d.avgYards));
-  svg1.append("path").datum(avgYardsByYear)
-    .attr("fill", "none").attr("stroke", "darkgreen").attr("stroke-width", 2).attr("d", line1);
+  svg1.append("path").datum(avgYardsByYear).attr("fill", "none").attr("stroke", "darkgreen").attr("stroke-width", 2).attr("d", line1);
 
-  const latest1 = avgYardsByYear.at(-1);
   svg1.append("text")
-    .attr("x", x1(latest1.year))
-    .attr("y", y1(latest1.avgYards) - 10)
+    .attr("x", x1(avgYardsByYear.at(-1).year))
+    .attr("y", y1(avgYardsByYear.at(-1).avgYards) - 10)
     .attr("text-anchor", "end")
     .style("font-size", "12px")
-    .text(`Latest: ${latest1.year}, ${latest1.avgYards.toFixed(1)} yds/game`);
+    .text(`Latest: ${avgYardsByYear.at(-1).year}, ${avgYardsByYear.at(-1).avgYards.toFixed(1)} yds/game`);
 
   // =============== Scene 2 ===============
   const svg2 = d3.select("#scene2").append("svg")
@@ -94,35 +90,31 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   const x2 = d3.scaleLinear().domain(d3.extent(avgCompByYear, d => d.year)).range([0, width]);
   const y2 = d3.scaleLinear().domain([0, d3.max(avgCompByYear, d => d.avgComp)]).nice().range([height, 0]);
 
-  svg2.append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x2).tickFormat(d3.format("d")));
+  svg2.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x2).tickFormat(d3.format("d")));
   svg2.append("g").call(d3.axisLeft(y2));
 
   svg2.append("text")
     .attr("x", width / 2)
     .attr("y", height + 40)
-    .attr("text-anchor", "middle")
+    .style("text-anchor", "middle")
     .text("Year");
 
   svg2.append("text")
     .attr("transform", "rotate(-90)")
     .attr("x", -height / 2)
-    .attr("y", -45)
-    .attr("text-anchor", "middle")
-    .text("Avg Completion %");
+    .attr("y", -40)
+    .style("text-anchor", "middle")
+    .text("Avg Completion Percentage");
 
   const line2 = d3.line().x(d => x2(d.year)).y(d => y2(d.avgComp));
-  svg2.append("path").datum(avgCompByYear)
-    .attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 2).attr("d", line2);
+  svg2.append("path").datum(avgCompByYear).attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 2).attr("d", line2);
 
-  const latest2 = avgCompByYear.at(-1);
   svg2.append("text")
-    .attr("x", x2(latest2.year))
-    .attr("y", y2(latest2.avgComp) - 10)
+    .attr("x", x2(avgCompByYear.at(-1).year))
+    .attr("y", y2(avgCompByYear.at(-1).avgComp) - 10)
     .attr("text-anchor", "end")
     .style("font-size", "12px")
-    .text(`Latest: ${latest2.year}, ${latest2.avgComp.toFixed(1)}% comp`);
+    .text(`Latest: ${avgCompByYear.at(-1).year}, ${avgCompByYear.at(-1).avgComp.toFixed(1)}% comp`);
 
   // =============== Scene 3 ===============
   const container3 = d3.select("#scene3");
@@ -136,10 +128,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const years = Array.from(new Set(data.map(d => d.Year)))
-    .filter(y => y >= 1932 && y <= 2016)
-    .sort((a, b) => a - b);
-
+  const years = Array.from(new Set(data.map(d => d.Year).filter(y => y >= 1932 && y <= 2016))).sort((a, b) => a - b);
   yearSelect.selectAll("option")
     .data(years)
     .enter()
@@ -182,7 +171,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("g")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickSizeOuter(0))
+      .call(d3.axisBottom(x))
       .selectAll("text")
       .attr("transform", "rotate(-35)")
       .style("text-anchor", "end")
@@ -192,27 +181,16 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("text")
       .attr("x", width / 2)
-      .attr("y", height + 45)
-      .attr("text-anchor", "middle")
-      .text("Quarterback");
+      .attr("y", height + 40)
+      .style("text-anchor", "middle")
+      .text("Quarterbacks");
 
     svg3.append("text")
       .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
-      .attr("y", -45)
-      .attr("text-anchor", "middle")
+      .attr("y", -40)
+      .style("text-anchor", "middle")
       .text("Passing Yards/Game");
-
-    const tooltip = d3.select("body").append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0)
-      .style("position", "absolute")
-      .style("background", "#fff")
-      .style("border", "1px solid #ccc")
-      .style("padding", "8px")
-      .style("border-radius", "5px")
-      .style("pointer-events", "none")
-      .style("font-size", "12px");
 
     svg3.selectAll("rect")
       .data(topPlayers)
@@ -223,31 +201,10 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("width", x.bandwidth())
       .attr("height", 0)
       .attr("fill", "orange")
-      .on("mouseover", function (event, d) {
-        tooltip.style("opacity", 1)
-          .html(`<strong>${d.FullName}</strong><br>
-                Team: ${d.Team}<br>
-                Yards/Game: ${d["Passing Yards Per Game"].toFixed(1)}<br>
-                Comp%: ${d["Completion Percentage"]}%<br>
-                TDs: ${d["TD Passes"]}<br>
-                INTs: ${d.Ints}`)
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY - 40) + "px");
-      })
-      .on("mouseout", () => tooltip.style("opacity", 0))
       .transition()
       .duration(800)
       .attr("y", d => y(d["Passing Yards Per Game"]))
       .attr("height", d => height - y(d["Passing Yards Per Game"]));
-
-    const top = topPlayers[0];
-    svg3.append("text")
-      .attr("x", x(top.FullName) + x.bandwidth() / 2)
-      .attr("y", y(top["Passing Yards Per Game"]) - 20)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .style("font-weight", "bold")
-      .text(`Top QB: ${top.FullName}`);
   }
 
   updateScene3(years.at(-1));
