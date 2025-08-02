@@ -7,9 +7,10 @@ window.showScene = function (sceneId) {
 
 // 📐 Chart layout
 const margin = { top: 50, right: 30, bottom: 100, left: 60 },
-      width = 800 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom;
+  width = 800 - margin.left - margin.right,
+  height = 500 - margin.top - margin.bottom;
 
+// 📊 Load CSV
 d3.csv("data/Career_Stats_Passing.csv").then(data => {
   data.forEach(d => {
     for (let key in d) {
@@ -19,6 +20,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
         delete d[key];
       }
     }
+
     d.Year = +d.Year;
     d["Passing Yards Per Game"] = +d["Passing Yards Per Game"] || 0;
     d["Completion Percentage"] = +d["Completion Percentage"] || 0;
@@ -26,88 +28,124 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     d.Ints = +d.Ints || 0;
   });
 
-  // Scene 1: Average Passing Yards Per Game
+  // =============== Scene 1 ===============
   const svg1 = d3.select("#scene1").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgYardsByYear = Array.from(
     d3.group(data.filter(d => d["Passing Yards Per Game"] > 0), d => d.Year),
-    ([year, records]) => ({ year: +year, avgYards: d3.mean(records, r => r["Passing Yards Per Game"]) })
+    ([year, records]) => ({
+      year: +year,
+      avgYards: d3.mean(records, r => r["Passing Yards Per Game"])
+    })
   ).sort((a, b) => a.year - b.year);
 
   const x1 = d3.scaleLinear().domain(d3.extent(avgYardsByYear, d => d.year)).range([0, width]);
   const y1 = d3.scaleLinear().domain([0, d3.max(avgYardsByYear, d => d.avgYards)]).nice().range([height, 0]);
 
-  svg1.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x1).tickFormat(d3.format("d")));
+  svg1.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x1).tickFormat(d3.format("d")));
   svg1.append("g").call(d3.axisLeft(y1));
 
-  svg1.append("path")
-    .datum(avgYardsByYear)
-    .attr("fill", "none")
-    .attr("stroke", "darkgreen")
-    .attr("stroke-width", 2)
-    .attr("d", d3.line().x(d => x1(d.year)).y(d => y1(d.avgYards)));
+  svg1.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + 40)
+    .attr("text-anchor", "middle")
+    .text("Year");
 
   svg1.append("text")
-    .attr("x", width / 2).attr("y", height + 40)
-    .attr("text-anchor", "middle").text("Year");
-  svg1.append("text")
-    .attr("x", -height / 2).attr("y", -40)
-    .attr("transform", "rotate(-90)").attr("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -45)
+    .attr("text-anchor", "middle")
     .text("Avg Passing Yards/Game");
 
-  // Scene 2: Completion Percentage
+  const line1 = d3.line().x(d => x1(d.year)).y(d => y1(d.avgYards));
+  svg1.append("path").datum(avgYardsByYear)
+    .attr("fill", "none").attr("stroke", "darkgreen").attr("stroke-width", 2).attr("d", line1);
+
+  const latest1 = avgYardsByYear.at(-1);
+  svg1.append("text")
+    .attr("x", x1(latest1.year))
+    .attr("y", y1(latest1.avgYards) - 10)
+    .attr("text-anchor", "end")
+    .style("font-size", "12px")
+    .text(`Latest: ${latest1.year}, ${latest1.avgYards.toFixed(1)} yds/game`);
+
+  // =============== Scene 2 ===============
   const svg2 = d3.select("#scene2").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgCompByYear = Array.from(
     d3.group(data.filter(d => d["Completion Percentage"] > 0), d => d.Year),
-    ([year, records]) => ({ year: +year, avgComp: d3.mean(records, r => r["Completion Percentage"]) })
+    ([year, records]) => ({
+      year: +year,
+      avgComp: d3.mean(records, r => r["Completion Percentage"])
+    })
   ).sort((a, b) => a.year - b.year);
 
   const x2 = d3.scaleLinear().domain(d3.extent(avgCompByYear, d => d.year)).range([0, width]);
   const y2 = d3.scaleLinear().domain([0, d3.max(avgCompByYear, d => d.avgComp)]).nice().range([height, 0]);
 
-  svg2.append("g").attr("transform", `translate(0,${height})`).call(d3.axisBottom(x2).tickFormat(d3.format("d")));
+  svg2.append("g")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x2).tickFormat(d3.format("d")));
   svg2.append("g").call(d3.axisLeft(y2));
 
-  svg2.append("path")
-    .datum(avgCompByYear)
-    .attr("fill", "none")
-    .attr("stroke", "steelblue")
-    .attr("stroke-width", 2)
-    .attr("d", d3.line().x(d => x2(d.year)).y(d => y2(d.avgComp)));
+  svg2.append("text")
+    .attr("x", width / 2)
+    .attr("y", height + 40)
+    .attr("text-anchor", "middle")
+    .text("Year");
 
   svg2.append("text")
-    .attr("x", width / 2).attr("y", height + 40)
-    .attr("text-anchor", "middle").text("Year");
-  svg2.append("text")
-    .attr("x", -height / 2).attr("y", -40)
-    .attr("transform", "rotate(-90)").attr("text-anchor", "middle")
-    .text("Completion %");
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -45)
+    .attr("text-anchor", "middle")
+    .text("Avg Completion %");
 
-  // Scene 3: Explore Top QBs by Year
+  const line2 = d3.line().x(d => x2(d.year)).y(d => y2(d.avgComp));
+  svg2.append("path").datum(avgCompByYear)
+    .attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 2).attr("d", line2);
+
+  const latest2 = avgCompByYear.at(-1);
+  svg2.append("text")
+    .attr("x", x2(latest2.year))
+    .attr("y", y2(latest2.avgComp) - 10)
+    .attr("text-anchor", "end")
+    .style("font-size", "12px")
+    .text(`Latest: ${latest2.year}, ${latest2.avgComp.toFixed(1)}% comp`);
+
+  // =============== Scene 3 ===============
   const container3 = d3.select("#scene3");
   container3.append("h2").text("Explore Top QBs by Yards/Game");
+
   const yearSelect = container3.append("select").attr("id", "yearDropdown");
 
   const svg3 = container3.append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const years = Array.from(new Set(data.map(d => d.Year)))
     .filter(y => y >= 1932 && y <= 2016)
     .sort((a, b) => a - b);
+
   yearSelect.selectAll("option")
     .data(years)
     .enter()
     .append("option")
-    .text(d => d).attr("value", d => d);
+    .text(d => d)
+    .attr("value", d => d);
 
   function updateScene3(selectedYear) {
     const filtered = data.filter(d =>
@@ -126,13 +164,17 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     svg3.selectAll("*").remove();
 
     svg3.append("text")
-      .attr("x", width / 2).attr("y", -20)
-      .attr("text-anchor", "middle").style("font-size", "16px").style("font-weight", "bold")
+      .attr("x", width / 2)
+      .attr("y", -20)
+      .attr("text-anchor", "middle")
+      .style("font-size", "16px")
+      .style("font-weight", "bold")
       .text(`Top Quarterbacks by Passing Yards/Game – ${selectedYear}`);
 
     const x = d3.scaleBand()
       .domain(topPlayers.map(d => d.FullName))
-      .range([0, width]).padding(0.2);
+      .range([0, width])
+      .padding(0.2);
 
     const y = d3.scaleLinear()
       .domain([0, d3.max(topPlayers, d => d["Passing Yards Per Game"])]).nice()
@@ -149,14 +191,17 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     svg3.append("g").call(d3.axisLeft(y));
 
     svg3.append("text")
-      .attr("x", width / 2).attr("y", height + 60)
-      .attr("text-anchor", "middle").text("Quarterback (First Last)");
+      .attr("x", width / 2)
+      .attr("y", height + 45)
+      .attr("text-anchor", "middle")
+      .text("Quarterback");
 
     svg3.append("text")
-      .attr("x", -height / 2).attr("y", -40)
       .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", -45)
       .attr("text-anchor", "middle")
-      .text("Yards/Game");
+      .text("Passing Yards/Game");
 
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
@@ -194,9 +239,18 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .duration(800)
       .attr("y", d => y(d["Passing Yards Per Game"]))
       .attr("height", d => height - y(d["Passing Yards Per Game"]));
+
+    const top = topPlayers[0];
+    svg3.append("text")
+      .attr("x", x(top.FullName) + x.bandwidth() / 2)
+      .attr("y", y(top["Passing Yards Per Game"]) - 20)
+      .attr("text-anchor", "middle")
+      .style("font-size", "12px")
+      .style("font-weight", "bold")
+      .text(`Top QB: ${top.FullName}`);
   }
 
-  updateScene3(2016);
+  updateScene3(years.at(-1));
   yearSelect.on("change", function () {
     updateScene3(this.value);
   });
