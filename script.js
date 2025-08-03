@@ -6,7 +6,7 @@ window.showScene = function (sceneId) {
 };
 
 // 📐 Chart layout
-const margin = { top: 50, right: 30, bottom: 60, left: 60 },
+const margin = { top: 50, right: 30, bottom: 100, left: 60 },
   width = 800 - margin.left - margin.right,
   height = 500 - margin.top - margin.bottom;
 
@@ -52,14 +52,14 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   svg1.append("text")
     .attr("x", width / 2)
     .attr("y", height + 40)
-    .style("text-anchor", "middle")
+    .attr("text-anchor", "middle")
     .text("Year");
 
   svg1.append("text")
-    .attr("transform", "rotate(-90)")
     .attr("x", -height / 2)
     .attr("y", -40)
-    .style("text-anchor", "middle")
+    .attr("transform", "rotate(-90)")
+    .attr("text-anchor", "middle")
     .text("Avg Passing Yards per Game");
 
   const line1 = d3.line().x(d => x1(d.year)).y(d => y1(d.avgYards));
@@ -96,15 +96,15 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   svg2.append("text")
     .attr("x", width / 2)
     .attr("y", height + 40)
-    .style("text-anchor", "middle")
+    .attr("text-anchor", "middle")
     .text("Year");
 
   svg2.append("text")
-    .attr("transform", "rotate(-90)")
     .attr("x", -height / 2)
     .attr("y", -40)
-    .style("text-anchor", "middle")
-    .text("Avg Completion Percentage");
+    .attr("transform", "rotate(-90)")
+    .attr("text-anchor", "middle")
+    .text("Completion Percentage (%)");
 
   const line2 = d3.line().x(d => x2(d.year)).y(d => y2(d.avgComp));
   svg2.append("path").datum(avgCompByYear).attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 2).attr("d", line2);
@@ -114,7 +114,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .attr("y", y2(avgCompByYear.at(-1).avgComp) - 10)
     .attr("text-anchor", "end")
     .style("font-size", "12px")
-    .text(`Latest: ${avgCompByYear.at(-1).year}, ${avgCompByYear.at(-1).avgComp.toFixed(1)}% comp`);
+    .text(`Latest: ${avgCompByYear.at(-1).year}, ${avgCompByYear.at(-1).avgComp.toFixed(1)}%`);
 
   // =============== Scene 3 ===============
   const container3 = d3.select("#scene3");
@@ -128,7 +128,10 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const years = Array.from(new Set(data.map(d => d.Year).filter(y => y >= 1932 && y <= 2016))).sort((a, b) => a - b);
+  const years = Array.from(new Set(data.map(d => d.Year)))
+    .filter(y => y >= 1932 && y <= 2016)
+    .sort((a, b) => a - b);
+
   yearSelect.selectAll("option")
     .data(years)
     .enter()
@@ -181,16 +184,27 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("text")
       .attr("x", width / 2)
-      .attr("y", height + 40)
-      .style("text-anchor", "middle")
-      .text("Quarterbacks");
+      .attr("y", height + 50)
+      .attr("text-anchor", "middle")
+      .text("Quarterback Name");
 
     svg3.append("text")
-      .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
       .attr("y", -40)
-      .style("text-anchor", "middle")
-      .text("Passing Yards/Game");
+      .attr("transform", "rotate(-90)")
+      .attr("text-anchor", "middle")
+      .text("Passing Yards per Game");
+
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("background", "#fff")
+      .style("border", "1px solid #ccc")
+      .style("padding", "8px")
+      .style("border-radius", "5px")
+      .style("pointer-events", "none")
+      .style("font-size", "12px");
 
     svg3.selectAll("rect")
       .data(topPlayers)
@@ -201,6 +215,22 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("width", x.bandwidth())
       .attr("height", 0)
       .attr("fill", "orange")
+      .on("mouseover", function (event, d) {
+        tooltip.transition().duration(200).style("opacity", 1);
+        tooltip.html(`
+          <strong>${d.FullName}</strong><br/>
+          Team: ${d.Team}<br/>
+          Yards/Game: ${d["Passing Yards Per Game"].toFixed(1)}<br/>
+          Comp %: ${d["Completion Percentage"].toFixed(1)}<br/>
+          TDs: ${d["TD Passes"]}<br/>
+          INTs: ${d.Ints}
+        `)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 40) + "px");
+      })
+      .on("mouseout", function () {
+        tooltip.transition().duration(300).style("opacity", 0);
+      })
       .transition()
       .duration(800)
       .attr("y", d => y(d["Passing Yards Per Game"]))
