@@ -20,7 +20,6 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
         delete d[key];
       }
     }
-
     d.Year = +d.Year;
     d["Passing Yards Per Game"] = +d["Passing Yards Per Game"] || 0;
     d["Completion Percentage"] = +d["Completion Percentage"] || 0;
@@ -94,7 +93,18 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   const container3 = d3.select("#scene3");
   container3.append("h2").text("Explore Top QBs by Yards/Game");
 
-  const yearSelect = container3.append("select").attr("id", "yearDropdown");
+  let selectedYear = 2016;
+
+  const yearSelect = container3.append("select")
+    .attr("id", "yearDropdown")
+    .style("margin-bottom", "10px");
+
+  const annotationBox = container3.append("div")
+    .attr("id", "scene3-annotation")
+    .style("margin", "10px 0")
+    .style("font-size", "14px")
+    .style("font-weight", "bold")
+    .style("color", "darkslategray");
 
   const svg3 = container3.append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -113,9 +123,11 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .text(d => d)
     .attr("value", d => d);
 
-  function updateScene3(selectedYear) {
+  function updateScene3(year) {
+    selectedYear = +year;
+
     const filtered = data.filter(d =>
-      d.Year === +selectedYear && d["Passing Yards Per Game"] > 0
+      d.Year === selectedYear && d["Passing Yards Per Game"] > 0
     );
 
     const topPlayers = filtered.sort((a, b) =>
@@ -193,8 +205,11 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .duration(800)
       .attr("y", d => y(d["Passing Yards Per Game"]))
       .attr("height", d => height - y(d["Passing Yards Per Game"]));
+
+    annotationBox.html(`In <strong>${selectedYear}</strong>, the top QB was <span style="color:darkorange">${topPlayers[0]?.FullName}</span> with <strong>${topPlayers[0]?.["Passing Yards Per Game"].toFixed(1)}</strong> Yards/Game.`);
   }
 
+  // Initialize with latest year
   updateScene3(years.at(-1));
   yearSelect.on("change", function () {
     updateScene3(this.value);
