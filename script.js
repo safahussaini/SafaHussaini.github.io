@@ -3,7 +3,7 @@
 // 🎯 Toggle scenes via buttons
 window.showScene = function(sceneId) {
   ['scene1','scene2','scene3'].forEach(id => {
-    document.getElementById(id).style.display = (id === sceneId ? 'block' : 'none');
+    document.getElementById(id).style.display = id === sceneId ? 'block' : 'none';
     document.getElementById('btn' + id.slice(-1))
             .classList.toggle('active', id === sceneId);
   });
@@ -16,7 +16,6 @@ const margin = { top: 50, right: 30, bottom: 100, left: 60 },
 
 // 📊 Load and preprocess data
 d3.csv("data/Career_Stats_Passing.csv").then(data => {
-  // Clean and convert types
   data.forEach(d => {
     Object.keys(d).forEach(key => {
       const cleanKey = key.trim();
@@ -55,7 +54,6 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   const x1 = d3.scaleLinear()
       .domain(d3.extent(avgYardsByYear, d=>d.year))
       .range([0, width]);
-
   const y1 = d3.scaleLinear()
       .domain([0, d3.max(avgYardsByYear, d=>d.avgYards)])
       .nice()
@@ -64,9 +62,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   svg1.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x1).tickFormat(d3.format("d")));
-
-  svg1.append("g")
-      .call(d3.axisLeft(y1));
+  svg1.append("g").call(d3.axisLeft(y1));
 
   svg1.append("path")
       .datum(avgYardsByYear)
@@ -104,7 +100,6 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   const x2 = d3.scaleLinear()
       .domain(d3.extent(avgCompByYear, d=>d.year))
       .range([0, width]);
-
   const y2 = d3.scaleLinear()
       .domain([0, d3.max(avgCompByYear, d=>d.avgComp)])
       .nice()
@@ -113,9 +108,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   svg2.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x2).tickFormat(d3.format("d")));
-
-  svg2.append("g")
-      .call(d3.axisLeft(y2));
+  svg2.append("g").call(d3.axisLeft(y2));
 
   svg2.append("path")
       .datum(avgCompByYear)
@@ -140,17 +133,18 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
   scene3.append("h2").text("Explore Top QBs by Yards/Game");
 
-  // 1️⃣ Create the tooltip (once)
+  // 1️⃣ Create the tooltip with full inline styles
   const tooltip = d3.select("body").append("div")
-    .attr("class","tooltip")
-    .style("opacity", 0)
     .style("position", "absolute")
+    .style("pointer-events", "none")
     .style("background", "#fff")
     .style("border", "1px solid #ccc")
     .style("padding", "8px")
     .style("border-radius", "4px")
-    .style("pointer-events", "none")
-    .style("font-size", "12px");
+    .style("font-size", "12px")
+    .style("box-shadow", "0 2px 4px rgba(0,0,0,0.2)")
+    .style("opacity", 0)
+    .style("z-index", 9999);
 
   let selectedYear = 2016;
   const yearSelect = scene3.append("select")
@@ -222,16 +216,17 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
         .attr("height",0)
         .attr("fill","orange")
       .on("mouseover", (event, d) => {
-        tooltip.transition().duration(200).style("opacity", 1);
-        tooltip.html(`
-          <strong>${d.FullName}</strong><br/>
-          YPG: ${d["Passing Yards Per Game"].toFixed(1)}<br/>
-          Comp %: ${d["Completion Percentage"].toFixed(1)}<br/>
-          TDs: ${d["TD Passes"]}<br/>
-          INTs: ${d.Ints}
-        `)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top",  (event.pageY - 40) + "px");
+        tooltip
+          .html(`
+            <strong>${d.FullName}</strong><br/>
+            YPG: ${d["Passing Yards Per Game"].toFixed(1)}<br/>
+            Comp %: ${d["Completion Percentage"].toFixed(1)}<br/>
+            TDs: ${d["TD Passes"]}<br/>
+            INTs: ${d.Ints}
+          `)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top",  (event.pageY - 40) + "px")
+          .transition().duration(200).style("opacity", 1);
       })
       .on("mouseout", () => {
         tooltip.transition().duration(300).style("opacity", 0);
