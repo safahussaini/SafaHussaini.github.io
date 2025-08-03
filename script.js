@@ -31,7 +31,9 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   // =============== Scene 1 ===============
   const scene1 = d3.select("#scene1");
   scene1.append("div").attr("class","narrative")
-    .text("In the NFL’s early years teams passed sparingly. Average passing yards per game was under 100. As rules changed and coaches opened up the field the league saw a steady rise in passing yardage.");
+    .text(
+      "In the NFL’s early years teams passed sparingly. Average passing yards per game was under 100. As rules changed and coaches opened up the field the league saw a steady rise in passing yardage."
+    );
 
   const svg1 = scene1.append("svg")
       .attr("width",  width + margin.left + margin.right)
@@ -40,51 +42,67 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgY = Array.from(
-    d3.group(data.filter(d=>d["Passing Yards Per Game"]>0), d=>d.Year),
-    ([year, recs]) => ({ year, yards: d3.mean(recs, r=>r["Passing Yards Per Game"]) })
-  ).sort((a,b)=>a.year-b.year);
+    d3.group(data.filter(d => d["Passing Yards Per Game"] > 0), d => d.Year),
+    ([year, recs]) => ({ year, yards: d3.mean(recs, r => r["Passing Yards Per Game"]) })
+  ).sort((a,b) => a.year - b.year);
 
-  const x1 = d3.scaleLinear().domain(d3.extent(avgY, d=>d.year)).range([0,width]);
-  const y1 = d3.scaleLinear().domain([0,d3.max(avgY, d=>d.yards)]).nice().range([height,0]);
+  const x1 = d3.scaleLinear().domain(d3.extent(avgY, d => d.year)).range([0, width]);
+  const y1 = d3.scaleLinear().domain([0, d3.max(avgY, d => d.yards)]).nice().range([height, 0]);
 
-  svg1.append("g").attr("transform",`translate(0,${height})`).call(d3.axisBottom(x1).tickFormat(d3.format("d")));
-  svg1.append("g").call(d3.axisLeft(y1));
+  svg1.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x1).tickFormat(d3.format("d")));
+
+  svg1.append("g")
+      .call(d3.axisLeft(y1));
 
   svg1.append("path")
       .datum(avgY)
       .attr("fill","none")
       .attr("stroke","darkgreen")
       .attr("stroke-width",2)
-      .attr("d", d3.line().x(d=>x1(d.year)).y(d=>y1(d.yards)));
+      .attr("d", d3.line().x(d => x1(d.year)).y(d => y1(d.yards)));
 
   scene1.append("div").attr("class","chart-caption")
     .text("Figure 1: Average passing yards per game (1930–2016)");
 
-  // annotate the peak
-  const peakY = avgY.reduce((a,b)=>a.yards>b.yards?a:b);
+  // Annotation: multi-line at peak
+  const peakY = avgY.reduce((a,b) => a.yards > b.yards ? a : b);
   svg1.append("circle")
       .attr("cx", x1(peakY.year))
       .attr("cy", y1(peakY.yards))
-      .attr("r",5)
-      .attr("fill","red");
-  // build era context
-  let note1 = peakY.year < 1950
-    ? "This was before modern passing systems."
+      .attr("r", 5)
+      .attr("fill", "red");
+
+  const note1 = peakY.year < 1950
+    ? "Before modern passing systems."
     : peakY.year < 2000
-    ? "Shows impact of West Coast and Coryell offenses."
-    : "Reflects spread offenses and rule changes easing passing.";
-  svg1.append("text")
-      .attr("x", x1(peakY.year)+8)
-      .attr("y", y1(peakY.yards)-8)
-      .text(`${peakY.year}: ${peakY.yards.toFixed(1)} yds. ${note1}`)
+    ? "Impact of West Coast & Coryell offenses."
+    : "Spread offense & rule changes boosted yardage.";
+
+  const text1 = svg1.append("text")
+      .attr("x", x1(peakY.year) + 8)
+      .attr("y", y1(peakY.yards) - 8)
       .style("font-size","12px")
       .style("font-weight","bold")
       .style("fill","red");
 
+  text1.append("tspan")
+      .attr("x", x1(peakY.year) + 8)
+      .attr("dy", 0)
+      .text(`${peakY.year}: ${peakY.yards.toFixed(1)} ypg`);
+
+  text1.append("tspan")
+      .attr("x", x1(peakY.year) + 8)
+      .attr("dy", 16)
+      .text(note1);
+
   // =============== Scene 2 ===============
   const scene2 = d3.select("#scene2");
   scene2.append("div").attr("class","narrative")
-    .text("Quarterbacks became more accurate over time. Completion rates rose from under 50% to above 65% as rule changes protected receivers and quarterbacks.");
+    .text(
+      "Quarterbacks became more accurate. Completion rates rose from under 50% to over 65% thanks to protective rules and refined offensive systems."
+    );
 
   const svg2 = scene2.append("svg")
       .attr("width",  width + margin.left + margin.right)
@@ -93,53 +111,70 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
   const avgC = Array.from(
-    d3.group(data.filter(d=>d["Completion Percentage"]>0), d=>d.Year),
-    ([year, recs]) => ({ year, comp: d3.mean(recs, r=>r["Completion Percentage"]) })
-  ).sort((a,b)=>a.year-b.year);
+    d3.group(data.filter(d => d["Completion Percentage"] > 0), d => d.Year),
+    ([year, recs]) => ({ year, comp: d3.mean(recs, r => r["Completion Percentage"]) })
+  ).sort((a,b) => a.year - b.year);
 
-  const x2 = d3.scaleLinear().domain(d3.extent(avgC, d=>d.year)).range([0,width]);
-  const y2 = d3.scaleLinear().domain([0,d3.max(avgC, d=>d.comp)]).nice().range([height,0]);
+  const x2 = d3.scaleLinear().domain(d3.extent(avgC, d => d.year)).range([0, width]);
+  const y2 = d3.scaleLinear().domain([0, d3.max(avgC, d => d.comp)]).nice().range([height, 0]);
 
-  svg2.append("g").attr("transform",`translate(0,${height})`).call(d3.axisBottom(x2).tickFormat(d3.format("d")));
-  svg2.append("g").call(d3.axisLeft(y2));
+  svg2.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(x2).tickFormat(d3.format("d")));
+
+  svg2.append("g")
+      .call(d3.axisLeft(y2));
 
   svg2.append("path")
       .datum(avgC)
       .attr("fill","none")
       .attr("stroke","steelblue")
       .attr("stroke-width",2)
-      .attr("d", d3.line().x(d=>x2(d.year)).y(d=>y2(d.comp)));
+      .attr("d", d3.line().x(d => x2(d.year)).y(d => y2(d.comp)));
 
   scene2.append("div").attr("class","chart-caption")
     .text("Figure 2: Average completion percentage (1930–2016)");
 
-  // annotate the peak completion
-  const peakC = avgC.reduce((a,b)=>a.comp>b.comp?a:b);
+  // Annotation: multi-line at peak
+  const peakC = avgC.reduce((a,b) => a.comp > b.comp ? a : b);
   svg2.append("circle")
       .attr("cx", x2(peakC.year))
       .attr("cy", y2(peakC.comp))
-      .attr("r",5)
-      .attr("fill","red");
-  let note2 = peakC.year < 1970
+      .attr("r", 5)
+      .attr("fill", "red");
+
+  const note2 = peakC.year < 1970
     ? "Early shift to protect passers."
     : peakC.year < 2000
-    ? "Better coaching and schemes improved accuracy."
-    : "Short passing game and new rules drove this mark.";
-  svg2.append("text")
-      .attr("x", x2(peakC.year)+8)
-      .attr("y", y2(peakC.comp)-8)
-      .text(`${peakC.year}: ${peakC.comp.toFixed(1)}%. ${note2}`)
+    ? "Coaching and schemes improved accuracy."
+    : "Rule changes and short passing increased completion.";
+
+  const text2 = svg2.append("text")
+      .attr("x", x2(peakC.year) + 8)
+      .attr("y", y2(peakC.comp) - 8)
       .style("font-size","12px")
       .style("font-weight","bold")
       .style("fill","red");
 
+  text2.append("tspan")
+      .attr("x", x2(peakC.year) + 8)
+      .attr("dy", 0)
+      .text(`${peakC.year}: ${peakC.comp.toFixed(1)}%`);
+
+  text2.append("tspan")
+      .attr("x", x2(peakC.year) + 8)
+      .attr("dy", 16)
+      .text(note2);
+
   // =============== Scene 3 ===============
   const scene3 = d3.select("#scene3");
   scene3.append("div").attr("class","narrative")
-    .text("Select a season to see the top 15 quarterbacks by passing yards per game.");
+    .text(
+      "Select a season to see the top 15 quarterbacks by passing yards per game."
+    );
   scene3.append("h2").text("Explore Top QBs by Yards/Game");
 
-  // tooltip
+  // Tooltip
   const tooltip = d3.select("body").append("div")
     .style("position","absolute")
     .style("pointer-events","none")
@@ -166,9 +201,9 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  const years = Array.from(new Set(data.map(d=>d.Year)))
-    .filter(y=>y>=1932 && y<=2016)
-    .sort((a,b)=>a-b);
+  const years = Array.from(new Set(data.map(d => d.Year)))
+    .filter(y => y >= 1932 && y <= 2016)
+    .sort((a,b) => a - b);
 
   yearSelect.selectAll("option")
     .data(years).enter()
@@ -179,21 +214,28 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   function updateScene3(year) {
     selectedYear = +year;
     const top = data
-      .filter(d=>d.Year===selectedYear && d["Passing Yards Per Game"]>0)
-      .sort((a,b)=>b["Passing Yards Per Game"]-a["Passing Yards Per Game"])
+      .filter(d => d.Year === selectedYear && d["Passing Yards Per Game"] > 0)
+      .sort((a,b) => b["Passing Yards Per Game"] - a["Passing Yards Per Game"])
       .slice(0,15)
-      .map(d=>{
-        const [last,first] = d.Name.split(", ");
+      .map(d => {
+        const [last, first] = d.Name.split(", ");
         return {...d, FullName:`${first} ${last}`};
       });
 
     svg3.selectAll("*").remove();
 
-    const x = d3.scaleBand().domain(top.map(d=>d.FullName)).range([0,width]).padding(0.2);
-    const y = d3.scaleLinear().domain([0,d3.max(top,d=>d["Passing Yards Per Game"])]).nice().range([height,0]);
+    const x = d3.scaleBand()
+      .domain(top.map(d => d.FullName))
+      .range([0, width])
+      .padding(0.2);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(top, d => d["Passing Yards Per Game"])])
+      .nice()
+      .range([height, 0]);
 
     svg3.append("g")
-        .attr("transform",`translate(0,${height})`)
+        .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x))
       .selectAll("text")
         .attr("transform","rotate(-35)")
@@ -202,49 +244,66 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("g").call(d3.axisLeft(y));
 
-    // draw bars + tooltips
+    // Bars + tooltip
     svg3.selectAll("rect")
-      .data(top).enter().append("rect")
-        .attr("x",d=>x(d.FullName))
-        .attr("y",height)
-        .attr("width",x.bandwidth())
-        .attr("height",0)
-        .attr("fill","orange")
-      .on("mouseover",(e,d)=>{
-        tooltip.html(
-          `<strong>${d.FullName}</strong><br/>
-           Team: ${d.Team}<br/>
-           YPG: ${d["Passing Yards Per Game"].toFixed(1)}<br/>
-           Comp: ${d["Completion Percentage"].toFixed(1)}%<br/>
-           TDs: ${d["TD Passes"]}, INTs: ${d.Ints}`
-        )
-        .style("left",(e.pageX+10)+"px")
-        .style("top",(e.pageY-40)+"px")
+      .data(top).enter()
+      .append("rect")
+        .attr("x", d => x(d.FullName))
+        .attr("y", height)
+        .attr("width", x.bandwidth())
+        .attr("height", 0)
+        .attr("fill", "orange")
+      .on("mouseover", (e,d) => {
+        tooltip.html(`
+          <strong>${d.FullName}</strong><br/>
+          Team: ${d.Team}<br/>
+          YPG: ${d["Passing Yards Per Game"].toFixed(1)}<br/>
+          Comp: ${d["Completion Percentage"].toFixed(1)}%<br/>
+          TDs: ${d["TD Passes"]}, INTs: ${d.Ints}
+        `)
+        .style("left", (e.pageX + 10) + "px")
+        .style("top",  (e.pageY - 40) + "px")
         .transition().duration(200).style("opacity",1);
       })
-      .on("mouseout",()=>tooltip.transition().duration(300).style("opacity",0))
+      .on("mouseout", () => tooltip.transition().duration(300).style("opacity",0))
       .transition().duration(800)
-        .attr("y",d=>y(d["Passing Yards Per Game"]))
-        .attr("height",d=>height - y(d["Passing Yards Per Game"]));
+        .attr("y", d => y(d["Passing Yards Per Game"]))
+        .attr("height", d => height - y(d["Passing Yards Per Game"]));
 
-    // annotate the top performer with context
+    // Annotation at top performer with context
     const best = top[0];
-    const cx = x(best.FullName) + x.bandwidth()/2;
+    const cx = x(best.FullName) + x.bandwidth() / 2;
     const cy = y(best["Passing Yards Per Game"]);
     svg3.append("circle")
-      .attr("cx",cx).attr("cy",cy).attr("r",5).attr("fill","red");
+      .attr("cx", cx)
+      .attr("cy", cy)
+      .attr("r", 5)
+      .attr("fill", "red");
 
-    // margin over runner-up
+    // difference to runner-up
     const diff = (best["Passing Yards Per Game"] - top[1]["Passing Yards Per Game"]).toFixed(1);
-    svg3.append("text")
-      .attr("x",cx+8).attr("y",cy-8)
-      .text(`${best.FullName} (${best.Team}): ${best["Passing Yards Per Game"].toFixed(1)} ypg, ${diff} ypg above second place`)
+
+    const text3 = svg3.append("text")
+      .attr("x", cx + 8)
+      .attr("y", cy - 8)
       .style("font-size","12px")
       .style("font-weight","bold")
       .style("fill","red");
+
+    text3.append("tspan")
+      .attr("x", cx + 8)
+      .attr("dy", 0)
+      .text(`${best.FullName}: ${best["Passing Yards Per Game"].toFixed(1)} ypg`);
+
+    text3.append("tspan")
+      .attr("x", cx + 8)
+      .attr("dy", 16)
+      .text(`${best.Team} led by ${diff} ypg over second place`);
   }
 
-  // initialize scene 3
+  // initialize Scene 3
   updateScene3(years.at(-1));
-  yearSelect.on("change", function(){ updateScene3(this.value); });
+  yearSelect.on("change", function() {
+    updateScene3(this.value);
+  });
 });
