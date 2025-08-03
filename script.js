@@ -36,12 +36,11 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
   // Narrative
   scene1.append("div").attr("class","narrative")
-    .html(`
-      In the NFL’s early decades, teams relied on running the ball and quarterbacks averaged under 100 passing yards per game.
-      Over time, new rules and more advanced passing tactics led to a steady rise in yardage through the air.
-    `);
+    .text(
+      "In the NFL’s early decades, teams ran far more than they passed. Quarterbacks averaged under 100 yards through the air per game. Over time, rule changes and passing innovations drove that average steadily upward."
+    );
 
-  // SVG
+  // SVG container
   const svg1 = scene1.append("svg")
       .attr("width",  width + margin.left + margin.right)
       .attr("height", height + margin.top  + margin.bottom)
@@ -84,26 +83,31 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   scene1.append("div").attr("class","chart-caption")
     .text("Figure 1: Average passing yards per game, by season (1930–2016)");
 
-  // Annotation
+  // Annotation inside chart
   const peakY = avgYardsByYear.reduce((a,b) => a.avgYards > b.avgYards ? a : b);
-  scene1.append("div")
-    .style("margin","12px 0")
-    .style("font-size","14px")
-    .style("font-weight","bold")
-    .style("color","darkslategray")
-    .text(`Peak average was ${peakY.avgYards.toFixed(1)} yards in ${peakY.year}.`);
+  svg1.append("circle")
+      .attr("cx", x1(peakY.year))
+      .attr("cy", y1(peakY.avgYards))
+      .attr("r", 4)
+      .attr("fill", "red");
+  svg1.append("text")
+      .attr("x", x1(peakY.year) + 6)
+      .attr("y", y1(peakY.avgYards) - 6)
+      .text(`${peakY.year}: ${peakY.avgYards.toFixed(1)} yds`)
+      .style("font-size","12px")
+      .style("font-weight","bold")
+      .style("fill","red");
 
   // =============== Scene 2 ===============
   const scene2 = d3.select("#scene2");
 
   // Narrative
   scene2.append("div").attr("class","narrative")
-    .html(`
-      Quarterbacks also grew more accurate.  Completion rates climbed from below 50% in early years to over 65% in recent seasons,
-      helped by protective rules and refined passing schemes.
-    `);
+    .text(
+      "Quarterbacks also got more accurate. Completion rates rose from under 50% in the league’s early era to over 65% today, thanks to protective rules and advanced passing systems."
+    );
 
-  // SVG
+  // SVG container
   const svg2 = scene2.append("svg")
       .attr("width",  width + margin.left + margin.right)
       .attr("height", height + margin.top  + margin.bottom)
@@ -146,23 +150,29 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   scene2.append("div").attr("class","chart-caption")
     .text("Figure 2: Average completion percentage, by season (1930–2016)");
 
-  // Annotation
+  // Annotation inside chart
   const peakC = avgCompByYear.reduce((a,b) => a.avgComp > b.avgComp ? a : b);
-  scene2.append("div")
-    .style("margin","12px 0")
-    .style("font-size","14px")
-    .style("font-weight","bold")
-    .style("color","darkslategray")
-    .text(`Highest completion rate was ${peakC.avgComp.toFixed(1)}% in ${peakC.year}.`);
+  svg2.append("circle")
+      .attr("cx", x2(peakC.year))
+      .attr("cy", y2(peakC.avgComp))
+      .attr("r", 4)
+      .attr("fill", "red");
+  svg2.append("text")
+      .attr("x", x2(peakC.year) + 6)
+      .attr("y", y2(peakC.avgComp) - 6)
+      .text(`${peakC.year}: ${peakC.avgComp.toFixed(1)}%`)
+      .style("font-size","12px")
+      .style("font-weight","bold")
+      .style("fill","red");
 
   // =============== Scene 3 ===============
   const scene3 = d3.select("#scene3");
 
   // Narrative
   scene3.append("div").attr("class","narrative")
-    .html(`
-      Now look at individual seasons.  Pick a year to see the top 15 quarterbacks by average passing yards.
-    `);
+    .text(
+      "Now look at individual seasons. Select a year to see the top 15 quarterbacks by average passing yards."
+    );
 
   scene3.append("h2").text("Explore Top QBs by Yards/Game");
 
@@ -196,7 +206,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Annotation box (dynamic)
+  // Dynamic annotation box (below chart)
   const annotationBox = scene3.append("div")
     .style("margin","12px 0")
     .style("font-size","14px")
@@ -270,17 +280,33 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
         .style("top",  (event.pageY-40)+"px")
         .transition().duration(200).style("opacity",1);
       })
-      .on("mouseout", () => {
-        tooltip.transition().duration(300).style("opacity",0);
-      })
+      .on("mouseout", () => { tooltip.transition().duration(300).style("opacity",0); })
       .transition().duration(800)
         .attr("y",      d=>y(d["Passing Yards Per Game"]))
         .attr("height", d=> height - y(d["Passing Yards Per Game"]));
 
-    // Dynamic annotation by era
+    // Annotation on the top bar
     const best = top[0];
+    const px = x(best.FullName) + x.bandwidth()/2;
+    const py = y(best["Passing Yards Per Game"]);
+
+    svg3.append("circle")
+      .attr("cx", px)
+      .attr("cy", py)
+      .attr("r", 4)
+      .attr("fill", "red");
+
+    svg3.append("text")
+      .attr("x", px + 6)
+      .attr("y", py - 6)
+      .text(`${best.FullName}: ${best["Passing Yards Per Game"].toFixed(1)} ypg`)
+      .style("font-size","12px")
+      .style("font-weight","bold")
+      .style("fill","red");
+
+    // Dynamic annotation below
     let eraText = selectedYear < 1980
-      ? "Even the top passer averaged under 200 yards."
+      ? "Top passers averaged under 200 yards per game."
       : selectedYear < 2000
       ? "Schemes like West Coast and shotgun increased yardage."
       : "Modern rules and spread offenses created prolific passers.";
@@ -295,4 +321,5 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   yearSelect.on("change", function() {
     updateScene3(this.value);
   });
+
 });
