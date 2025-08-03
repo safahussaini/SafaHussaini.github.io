@@ -31,7 +31,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   // =============== Scene 1 ===============
   const scene1 = d3.select("#scene1");
   scene1.append("div").attr("class","narrative")
-    .text("In the NFL’s early years teams passed sparingly. Average passing yards per game was under 100. As rules changed and coaches opened up the field the league saw a steady rise in passing yardage. The dataset can be found at https://www.kaggle.com/datasets/kendallgillies/nflstatistics/data?select=Career_Stats_Passing.csv");
+    .text("In the NFL’s early years teams passed sparingly. Average passing yards per game was under 100. As rules changed and coaches opened up the field the league saw a steady rise in passing yardage.");
 
   const svg1 = scene1.append("svg")
       .attr("width",  width + margin.left + margin.right)
