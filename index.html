@@ -6,40 +6,80 @@
   <title>Quarterback Evolution Visualization</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    button {
-      margin-right: 10px; margin-bottom: 20px;
-      padding: 8px 16px;
-      background-color: #444; color: #fff;
-      border: none; border-radius: 4px;
+    body {
+      font-family: sans-serif;
+      background: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .intro {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 24px;
+      line-height: 1.5;
+      color: #555;
+    }
+    nav {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    nav button {
+      margin: 0 8px;
+      padding: 10px 20px;
+      background-color: #0066cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
+      font-size: 14px;
     }
-    .scene { display: none; }
-    #scene1, #scene2, #scene3 { margin-top: 30px; }
+    nav button.active {
+      background-color: #004999;
+    }
+    .scene {
+      display: none;
+    }
     .narrative {
-      max-width: 800px; margin-bottom: 20px;
-      line-height: 1.5; color: #333;
+      margin-bottom: 16px;
+      font-size: 15px;
+      line-height: 1.6;
     }
-    #scene3-annotation p {
-      font-size: 14px; font-weight: bold;
-      color: darkslategray;
+    .chart-caption {
+      font-size: 13px;
+      color: #666;
+      font-style: italic;
+      margin-top: 8px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>Quarterback Evolution Over Time</h1>
+  <div class="container">
+    <h1>Quarterback Evolution Over Time</h1>
+    <div class="intro">
+      This narrative visualization explores how the NFL quarterback role has transformed—from the early ground-heavy era to today’s pass-centric offenses.  Three scenes use D3 to show (1) average passing yards per game, (2) completion percentage, and (3) the top individual performers each year.
+    </div>
 
-  <!-- scene navigation -->
-  <div>
-    <button onclick="showScene('scene1')">Scene 1: Passing Yards</button>
-    <button onclick="showScene('scene2')">Scene 2: Completion %</button>
-    <button onclick="showScene('scene3')">Scene 3: Top Players</button>
+    <nav>
+      <button id="btn1" onclick="showScene('scene1')">Passing Yards</button>
+      <button id="btn2" onclick="showScene('scene2')">Completion %</button>
+      <button id="btn3" onclick="showScene('scene3')">Top QBs</button>
+    </nav>
+
+    <div id="scene1" class="scene"></div>
+    <div id="scene2" class="scene"></div>
+    <div id="scene3" class="scene"></div>
   </div>
-
-  <!-- scenes -->
-  <div id="scene1" class="scene"></div>
-  <div id="scene2" class="scene"></div>
-  <div id="scene3" class="scene"></div>
 
   <script src="script.js"></script>
   <script>showScene('scene1');</script>
