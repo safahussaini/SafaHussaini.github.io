@@ -60,7 +60,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("d", d3.line().x(d => x1(d.year)).y(d => y1(d.yards)));
 
   scene1.append("div").attr("class","chart-caption")
-    .text("Figure 1: Average passing yards per game (1930–2016)");
+    .text("Figure 1: Average passing yards per game (1930-2016)");
 
   // Annotation at peak point
   const peakY = avgY.reduce((a,b) => a.yards > b.yards ? a : b);
@@ -113,7 +113,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("d", d3.line().x(d => x2(d.year)).y(d => y2(d.comp)));
 
   scene2.append("div").attr("class","chart-caption")
-    .text("Figure 2: Average completion percentage (1930–2016)");
+    .text("Figure 2: Average completion percentage (1930-2016)");
 
   // Annotation at peak point
   const peakC = avgC.reduce((a,b) => a.comp > b.comp ? a : b);
