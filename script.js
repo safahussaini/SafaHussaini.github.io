@@ -133,7 +133,7 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
   scene3.append("h2").text("Explore Top QBs by Yards/Game");
 
-  // 1️⃣ Create the tooltip with full inline styles
+  // 1️⃣ Tooltip
   const tooltip = d3.select("body").append("div")
     .style("position", "absolute")
     .style("pointer-events", "none")
@@ -206,16 +206,19 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("g").call(d3.axisLeft(y));
 
-    // 2️⃣ Draw bars with hover handlers
+    // 2️⃣ Bars with hover highlight + tooltip
     svg3.selectAll("rect")
       .data(top)
       .enter().append("rect")
-        .attr("x",    d=>x(d.FullName))
-        .attr("y",    height)
-        .attr("width",x.bandwidth())
-        .attr("height",0)
-        .attr("fill","orange")
+        .attr("x",      d=>x(d.FullName))
+        .attr("y",      height)
+        .attr("width",  x.bandwidth())
+        .attr("height", 0)
+        .attr("fill",   "orange")
       .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget)
+          .attr("fill", "orangered")
+          .attr("cursor", "pointer");
         tooltip
           .html(`
             <strong>${d.FullName}</strong><br/>
@@ -228,14 +231,20 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
           .style("top",  (event.pageY - 40) + "px")
           .transition().duration(200).style("opacity", 1);
       })
-      .on("mouseout", () => {
+      .on("mousemove", event => {
+        tooltip
+          .style("left", (event.pageX + 10) + "px")
+          .style("top",  (event.pageY - 40) + "px");
+      })
+      .on("mouseout", (event) => {
+        d3.select(event.currentTarget)
+          .attr("fill", "orange");
         tooltip.transition().duration(300).style("opacity", 0);
       })
       .transition().duration(800)
         .attr("y",      d=>y(d["Passing Yards Per Game"]))
         .attr("height", d=>height - y(d["Passing Yards Per Game"]));
 
-    // dynamic annotation
     const best = top[0];
     let eraText = selectedYear < 1980
       ? "In the run-heavy era, even the best passed under 200 ypg."
