@@ -203,6 +203,8 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
     .append("option")
       .text(d => d)
       .attr("value", d => d);
+  yearSelect.property("value", 2016);
+
 
   // Triggers
   yearSelect.on("change", function() {
