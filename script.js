@@ -33,27 +33,22 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
   // =============== Scene 1 ===============
   const scene1 = d3.select("#scene1");
-
-  // Narrative
   scene1.append("div").attr("class","narrative")
     .text(
       "In the NFL’s early decades, teams ran far more than they passed. Quarterbacks averaged under 100 yards through the air per game. Over time, rule changes and passing innovations drove that average steadily upward."
     );
 
-  // SVG container
   const svg1 = scene1.append("svg")
       .attr("width",  width + margin.left + margin.right)
       .attr("height", height + margin.top  + margin.bottom)
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Data prep
   const avgYardsByYear = Array.from(
     d3.group(data.filter(d => d["Passing Yards Per Game"] > 0), d => d.Year),
     ([year, recs]) => ({ year, avgYards: d3.mean(recs, r => r["Passing Yards Per Game"]) })
   ).sort((a,b) => a.year - b.year);
 
-  // Scales
   const x1 = d3.scaleLinear()
       .domain(d3.extent(avgYardsByYear, d=>d.year))
       .range([0, width]);
@@ -62,13 +57,11 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .nice()
       .range([height, 0]);
 
-  // Axes
   svg1.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x1).tickFormat(d3.format("d")));
   svg1.append("g").call(d3.axisLeft(y1));
 
-  // Line
   svg1.append("path")
       .datum(avgYardsByYear)
       .attr("fill","none")
@@ -79,20 +72,19 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
         .y(d=>y1(d.avgYards))
       );
 
-  // Caption
   scene1.append("div").attr("class","chart-caption")
     .text("Figure 1: Average passing yards per game, by season (1930–2016)");
 
-  // Annotation inside chart
+  // Annotation inside Scene 1
   const peakY = avgYardsByYear.reduce((a,b) => a.avgYards > b.avgYards ? a : b);
   svg1.append("circle")
       .attr("cx", x1(peakY.year))
       .attr("cy", y1(peakY.avgYards))
-      .attr("r", 4)
+      .attr("r", 5)
       .attr("fill", "red");
   svg1.append("text")
-      .attr("x", x1(peakY.year) + 6)
-      .attr("y", y1(peakY.avgYards) - 6)
+      .attr("x", x1(peakY.year) + 8)
+      .attr("y", y1(peakY.avgYards) - 8)
       .text(`${peakY.year}: ${peakY.avgYards.toFixed(1)} yds`)
       .style("font-size","12px")
       .style("font-weight","bold")
@@ -100,27 +92,22 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
   // =============== Scene 2 ===============
   const scene2 = d3.select("#scene2");
-
-  // Narrative
   scene2.append("div").attr("class","narrative")
     .text(
       "Quarterbacks also got more accurate. Completion rates rose from under 50% in the league’s early era to over 65% today, thanks to protective rules and advanced passing systems."
     );
 
-  // SVG container
   const svg2 = scene2.append("svg")
       .attr("width",  width + margin.left + margin.right)
       .attr("height", height + margin.top  + margin.bottom)
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Data prep
   const avgCompByYear = Array.from(
     d3.group(data.filter(d => d["Completion Percentage"] > 0), d => d.Year),
     ([year, recs]) => ({ year, avgComp: d3.mean(recs, r=>r["Completion Percentage"]) })
   ).sort((a,b) => a.year - b.year);
 
-  // Scales
   const x2 = d3.scaleLinear()
       .domain(d3.extent(avgCompByYear, d=>d.year))
       .range([0, width]);
@@ -129,13 +116,11 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .nice()
       .range([height, 0]);
 
-  // Axes
   svg2.append("g")
       .attr("transform", `translate(0,${height})`)
       .call(d3.axisBottom(x2).tickFormat(d3.format("d")));
   svg2.append("g").call(d3.axisLeft(y2));
 
-  // Line
   svg2.append("path")
       .datum(avgCompByYear)
       .attr("fill","none")
@@ -146,20 +131,19 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
         .y(d=>y2(d.avgComp))
       );
 
-  // Caption
   scene2.append("div").attr("class","chart-caption")
     .text("Figure 2: Average completion percentage, by season (1930–2016)");
 
-  // Annotation inside chart
+  // Annotation inside Scene 2
   const peakC = avgCompByYear.reduce((a,b) => a.avgComp > b.avgComp ? a : b);
   svg2.append("circle")
       .attr("cx", x2(peakC.year))
       .attr("cy", y2(peakC.avgComp))
-      .attr("r", 4)
+      .attr("r", 5)
       .attr("fill", "red");
   svg2.append("text")
-      .attr("x", x2(peakC.year) + 6)
-      .attr("y", y2(peakC.avgComp) - 6)
+      .attr("x", x2(peakC.year) + 8)
+      .attr("y", y2(peakC.avgComp) - 8)
       .text(`${peakC.year}: ${peakC.avgComp.toFixed(1)}%`)
       .style("font-size","12px")
       .style("font-weight","bold")
@@ -167,13 +151,10 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
   // =============== Scene 3 ===============
   const scene3 = d3.select("#scene3");
-
-  // Narrative
   scene3.append("div").attr("class","narrative")
     .text(
       "Now look at individual seasons. Select a year to see the top 15 quarterbacks by average passing yards."
     );
-
   scene3.append("h2").text("Explore Top QBs by Yards/Game");
 
   // Tooltip
@@ -195,25 +176,15 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
       .attr("id","yearDropdown")
       .style("margin","0 0 12px 0");
 
-  // Caption
   scene3.append("div").attr("class","chart-caption")
     .text("Figure 3: Top 15 QBs by passing yards per game in the selected season.");
 
-  // SVG container
   const svg3 = scene3.append("svg")
       .attr("width",  width + margin.left + margin.right)
       .attr("height", height + margin.top  + margin.bottom)
     .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Dynamic annotation box (below chart)
-  const annotationBox = scene3.append("div")
-    .style("margin","12px 0")
-    .style("font-size","14px")
-    .style("font-weight","bold")
-    .style("color","darkslategray");
-
-  // Years list
   const years = Array.from(new Set(data.map(d => d.Year)))
     .filter(y => y >= 1932 && y <= 2016)
     .sort((a,b) => a - b);
@@ -259,7 +230,6 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
 
     svg3.append("g").call(d3.axisLeft(y));
 
-    // Bars with tooltip handlers
     svg3.selectAll("rect")
       .data(top)
       .enter().append("rect")
@@ -285,35 +255,24 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
         .attr("y",      d=>y(d["Passing Yards Per Game"]))
         .attr("height", d=> height - y(d["Passing Yards Per Game"]));
 
-    // Annotation on the top bar
+    // Annotation inside Scene 3
     const best = top[0];
-    const px = x(best.FullName) + x.bandwidth()/2;
+    const px = x(best.FullName) + x.bandwidth() / 2;
     const py = y(best["Passing Yards Per Game"]);
 
     svg3.append("circle")
       .attr("cx", px)
       .attr("cy", py)
-      .attr("r", 4)
+      .attr("r", 5)
       .attr("fill", "red");
 
     svg3.append("text")
-      .attr("x", px + 6)
-      .attr("y", py - 6)
+      .attr("x", px + 8)
+      .attr("y", py - 8)
       .text(`${best.FullName}: ${best["Passing Yards Per Game"].toFixed(1)} ypg`)
       .style("font-size","12px")
       .style("font-weight","bold")
       .style("fill","red");
-
-    // Dynamic annotation below
-    let eraText = selectedYear < 1980
-      ? "Top passers averaged under 200 yards per game."
-      : selectedYear < 2000
-      ? "Schemes like West Coast and shotgun increased yardage."
-      : "Modern rules and spread offenses created prolific passers.";
-
-    annotationBox.text(
-      `In ${selectedYear}, ${best.FullName} led with ${best["Passing Yards Per Game"].toFixed(1)} yards per game. ${eraText}`
-    );
   }
 
   // initialize scene 3
@@ -321,5 +280,4 @@ d3.csv("data/Career_Stats_Passing.csv").then(data => {
   yearSelect.on("change", function() {
     updateScene3(this.value);
   });
-
 });
